@@ -1,18 +1,31 @@
 // HINTS:
 // 1. Import express and axios
 import express from "express";
-import x from "axios";
+import axios from "axios";
 
 // 2. Create an express app and set the port number.
 const app = express();
 const port = 3000;
 
+let hiddenSecret;
+let username;
+
 // 3. Use the public folder for static files.
 app.use(express.static("public"));
 
 // 4. When the user goes to the home page it should render the index.ejs file.
-app.get("/", (req, res) => {
-    res.render("index.ejs");
+app.get("/", async (req, res) => {
+    try{
+        const response = await axios.get("https://secrets-api.appbrewery.com/random");
+        const data = response.data;
+        hiddenSecret = data.secret;
+        username = data.username;
+        res.render("index.ejs", {secret: hiddenSecret, user: username});
+    }catch(error){
+        console.error(`Failed to make request: ${error.message}`);
+        res.status(404).send("Secret Not Found");
+    }
+    
 })
 
 // 5. Use axios to get a random secret and pass it to index.ejs to display the
